@@ -6,9 +6,13 @@ namespace FileStorageSystem
 {
     public static class TextEditor
     {
-        public static string EditText(string initialContent)
+        public static void Prompt()
         {
             Console.WriteLine("\n--- Text Editor (Type '_save_' on a new line to save file and exit, '_quit_' to exit without saving, '_insert_ <line_number>' to insert content, '_delete_ <line_number>' to delete line) ---");
+        }
+        public static string EditText(string initialContent)
+        {
+            Prompt();
             List<string> lines = new List<string>(initialContent.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
 
             Console.WriteLine("Initial Content:");
@@ -72,6 +76,8 @@ namespace FileStorageSystem
                 else
                 {
                     lines.Add(input);
+                    Console.Clear();
+                    Prompt();
                 }
                 DisplayContentWithLineNumbers(lines);
             }

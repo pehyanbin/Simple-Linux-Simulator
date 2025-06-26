@@ -325,15 +325,40 @@ namespace FileStorageSystem
 
                 if (sourceEntity is File sourceFile)
                 {
-                    File newFile = new File(sourceFile.Name, destinationFolder, sourceFile.Content);
-                    destinationFolder.AddEntity(newFile);
+                    
                     string sourceFullPath = sourceFile.GetFullPath();
                     string destinationFullPath = Path.Combine(destinationFolder.GetFullPath(), sourceFile.Name);
-                    if (System.IO.File.Exists(sourceFullPath))
+
+                    
+                    if (!System.IO.File.Exists(sourceFullPath))
                     {
-                        System.IO.File.Copy(sourceFullPath, destinationFullPath);
+                        Console.WriteLine($"Error: Source file '{sourceFullPath}' does not exist in the physical file system.");
+                        return;
                     }
-                    Console.WriteLine($"Copied file '{sourceFile.Name}' to '{destinationFolder.GetFullPath()}'.");
+
+                    
+                    if (System.IO.File.Exists(destinationFullPath))
+                    {
+                        Console.WriteLine($"Error: A file named '{sourceFile.Name}' already exists at '{destinationFullPath}'.");
+                        return;
+                    }
+
+                    try
+                    {
+                        
+                        System.IO.File.Copy(sourceFullPath, destinationFullPath);
+
+                        
+                        File newFile = new File(sourceFile.Name, destinationFolder, sourceFile.Content);
+                        destinationFolder.AddEntity(newFile);
+
+                        Console.WriteLine($"Copied file '{sourceFile.Name}' to '{destinationFolder.GetFullPath()}'.");
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"Error copying file: {ex.Message} (Source: {sourceFullPath}, Destination: {destinationFullPath})");
+                        return;
+                    }
                 }
                 else if (sourceEntity is Folder sourceFolder)
                 {
@@ -354,22 +379,65 @@ namespace FileStorageSystem
         {
             foreach (var entity in source.Contents)
             {
+                if (destination.GetEntity(entity.Name) != null)
+                {
+                    Console.WriteLine($"'{entity.Name}' already exists in '{destination.GetFullPath()}'.");
+                    continue;
+                }
+
+
                 if (entity is File file)
                 {
-                    File newFile = new File(file.Name, destination, file.Content);
-                    destination.AddEntity(newFile);
                     string sourcePath = file.GetFullPath();
-                    string destPath = newFile.GetFullPath();
-                    if (System.IO.File.Exists(sourcePath))
+                    string destPath = Path.Combine(destination.GetFullPath(), file.Name);
+                    
+                    if (!System.IO.File.Exists(sourcePath))
+                    {
+                        Console.WriteLine($"Warning: Source file '{sourcePath}' does not exist in the physical file system. Skipping.");
+                        continue;
+                    }
+                    
+                    if (System.IO.File.Exists(destPath))
+                    {
+                        Console.WriteLine($"Warning: A file named '{file.Name}' already exists at '{destPath}'. Skipping.");
+                        continue;
+                    }
+
+                    try
                     {
                         System.IO.File.Copy(sourcePath, destPath);
+                        
+                        File newFile = new File(file.Name, destination, file.Content);
+                        destination.AddEntity(newFile);
+
+                        Console.WriteLine($"Copied file '{file.Name}' to '{destination.GetFullPath()}'.");
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"Error copying file '{file.Name}': {ex.Message} (Source: {sourcePath}, Destination: {destPath})");
+                        continue;
                     }
                 }
                 else if (entity is Folder folder)
                 {
-                    Folder newSubFolder = new Folder(folder.Name, destination);
-                    destination.AddEntity(newSubFolder);
-                    CopyFolderContents(folder, newSubFolder);
+                    try
+                    {
+                        Folder newSubFolder = new Folder(folder.Name, destination);
+                        destination.AddEntity(newSubFolder);
+
+                        CopyFolderContents(folder, newSubFolder);
+                        Console.WriteLine($"Copied folder '{folder.Name}' to '{destination.GetFullPath()}'.");
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine($"Error creating folder '{folder.Name}' in '{destination.GetFullPath()}': {ex.Message}");
+                        continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error copying folder '{folder.Name}': {ex.Message}");
+                        continue;
+                    }
                 }
             }
         }
