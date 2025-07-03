@@ -2,98 +2,146 @@
 using System.Collections.Generic;
 using System.Linq;
 
+// Namespace to organize the file storage system-related classes
 namespace FileStorageSystem
 {
-    // Provides an interactive text editor for modifying file content.
+    // Static class to provide text editing functionality
     public static class TextEditor
     {
-        // Edits the content of a file interactively.
+        // Method to display the text editor prompt and instructions
+        public static void Prompt()
+        {
+            // Print instructions for using the text editor
+            Console.WriteLine("\n--- Text Editor (Type '_save_' on a new line to save file and exit, '_quit_' to exit without saving, '_insert_ <line_number>' to insert content, '_delete_ <line_number>' to delete line) ---");
+        }
+
+        // Method to edit text interactively
         public static string EditText(string initialContent)
         {
-            // Display instructions for the text editor.
-            Console.WriteLine("\n--- Text Editor (Type '_save_' on a new line to save file and exit, '_quit_' to exit without saving, '_insert_ <line_number>' to insert content, '_delete_ <line_number>' to delete line) ---");
-            List<string> lines = new List<string>(initialContent.Split(new[] { Environment.NewLine }, StringSplitOptions.None)); // Split content into lines.
+            // Display the editor prompt
+            Prompt();
+            // Split the initial content into lines
+            List<string> lines = new List<string>(initialContent.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
 
+            // Display the initial content with line numbers
             Console.WriteLine("Initial Content:");
-            DisplayContentWithLineNumbers(lines); // Show the initial content with line numbers.
+            DisplayContentWithLineNumbers(lines);
 
-            while (true) // Loop to process user input.
+            // Main loop to process user input
+            while (true)
             {
-                Console.Write($"{lines.Count + 1}> "); // Prompt for input at the next line.
-                string input = Console.ReadLine(); // Read user input.
+                // Prompt the user for input at the next line number
+                Console.Write($"{lines.Count + 1}> ");
+                // Read the user's input
+                string input = Console.ReadLine();
 
-                if (input.Equals("_save_", StringComparison.OrdinalIgnoreCase)) // Save and exit.
+                // If the user wants to save and exit
+                if (input.Equals("_save_", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Print a confirmation message
                     Console.WriteLine("Changes saved");
-                    return string.Join(Environment.NewLine, lines); // Return the modified content.
+                    // Return the edited content as a single string
+                    return string.Join(Environment.NewLine, lines);
                 }
-                else if (input.Equals("_quit_", StringComparison.OrdinalIgnoreCase)) // Discard changes and exit.
+                // If the user wants to quit without saving
+                else if (input.Equals("_quit_", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Print a confirmation message
                     Console.WriteLine("Discard changes");
-                    return initialContent; // Return the original content.
+                    // Return the original content
+                    return initialContent;
                 }
-                else if (input.StartsWith("_insert_ ", StringComparison.OrdinalIgnoreCase)) // Insert content at a line.
+                // If the user wants to insert content at a specific line
+                else if (input.StartsWith("_insert_ ", StringComparison.OrdinalIgnoreCase))
                 {
-                    string[] parts = input.Split(new char[] { ' ' }, 3); // Split command into parts.
-                    if (parts.Length == 3 && int.TryParse(parts[1], out int lineNumber)) // Validate line number.
+                    // Split the input into parts (command, line number, content)
+                    string[] parts = input.Split(new char[] { ' ' }, 3);
+
+                    // Check if the input has the correct format and a valid line number
+                    if (parts.Length == 3 && int.TryParse(parts[1], out int lineNumber))
                     {
-                        if (lineNumber >= 1 && lineNumber <= lines.Count + 1) // Check if line number is valid.
+                        // Validate the line number
+                        if (lineNumber >= 1 && lineNumber <= lines.Count + 1)
                         {
-                            lines.Insert(lineNumber - 1, parts[2]); // Insert content at the specified line.
+                            // Insert the content at the specified line (0-based index)
+                            lines.Insert(lineNumber - 1, parts[2]);
+                            // Print a confirmation message
                             Console.WriteLine($"Line inserted at {lineNumber}.");
                         }
                         else
                         {
+                            // Print an error message for invalid line number
                             Console.WriteLine("Invalid line number for insert.");
                         }
                     }
                     else
                     {
+                        // Print usage instructions for the insert command
                         Console.WriteLine("Invalid INSERT command. Usage: _insert_ <line_number> <content>");
                     }
                 }
-                else if (input.StartsWith("_delete_ ", StringComparison.OrdinalIgnoreCase)) // Delete a line.
+                // If the user wants to delete a specific line
+                else if (input.StartsWith("_delete_ ", StringComparison.OrdinalIgnoreCase))
                 {
-                    string[] parts = input.Split(' '); // Split command into parts.
-                    if (parts.Length == 2 && int.TryParse(parts[1], out int lineNumber)) // Validate line number.
+                    // Split the input into parts (command, line number)
+                    string[] parts = input.Split(' ');
+
+                    // Check if the input has the correct format and a valid line number
+                    if (parts.Length == 2 && int.TryParse(parts[1], out int lineNumber))
                     {
-                        if (lineNumber >= 1 && lineNumber <= lines.Count) // Check if line number is valid.
+                        // Validate the line number
+                        if (lineNumber >= 1 && lineNumber <= lines.Count)
                         {
-                            lines.RemoveAt(lineNumber - 1); // Remove the specified line.
+                            // Remove the line at the specified index (0-based)
+                            lines.RemoveAt(lineNumber - 1);
+                            // Print a confirmation message
                             Console.WriteLine($"Line {lineNumber} deleted.");
                         }
                         else
                         {
+                            // Print an error message for invalid line number
                             Console.WriteLine("Invalid line number for delete.");
                         }
                     }
                     else
                     {
+                        // Print usage instructions for the delete command
                         Console.WriteLine("Invalid DELETE command. Usage: _delete_ <line_number>");
                     }
                 }
                 else
                 {
-                    lines.Add(input); // Add input as a new line.
+                    // Add the input as a new line
+                    lines.Add(input);
+                    // Clear the console for a clean display
+                    Console.Clear();
+                    // Redisplay the prompt
+                    Prompt();
                 }
-                DisplayContentWithLineNumbers(lines); // Display updated content after each change.
+                // Display the current content with line numbers
+                DisplayContentWithLineNumbers(lines);
             }
         }
 
-        // Displays file content with line numbers.
+        // Method to view text content with line numbers
         public static void ViewText(string content)
         {
+            // Print a header for viewing content
             Console.WriteLine("\n--- Viewing File Content ---");
-            DisplayContentWithLineNumbers(content.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList()); // Split and display content.
+            // Split the content into lines and display with line numbers
+            DisplayContentWithLineNumbers(content.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList());
+            // Print a footer
             Console.WriteLine("----------------------------");
         }
 
-        // Helper method to display content with line numbers.
+        // Method to display a list of lines with line numbers
         public static void DisplayContentWithLineNumbers(List<string> lines)
         {
+            // Iterate through the lines
             for (int i = 0; i < lines.Count; i++)
             {
-                Console.WriteLine($"{i + 1}: {lines[i]}"); // Print each line with its number.
+                // Print each line with its line number (1-based)
+                Console.WriteLine($"{i + 1}: {lines[i]}");
             }
         }
     }

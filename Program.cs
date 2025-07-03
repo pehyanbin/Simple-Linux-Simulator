@@ -2,221 +2,298 @@
 using System.Data;
 using System.Linq;
 
+// Namespace to organize the file storage system-related classes
 namespace FileStorageSystem
 {
-    // Defines an enum for supported commands.
+    // Enum defining the supported commands for the file system interface
     public enum Commands
     {
-        Help,
-        PrintWorkingDirectory,
-        CreateFolder,
-        CreateFile,
-        Remove,
-        Rename,
-        Move,
-        Copy,
-        Navigate,
-        ListContent,
-        ReadFiles,
-        FileEditor,
-        SearchFiles,
-        ShowHistory,
-        Exit,
-        Unknown
+        Help,              // Display help information
+        PrintWorkingDirectory, // Print the current working directory
+        CreateFolder,      // Create a new folder
+        CreateFile,        // Create a new file
+        Remove,            // Delete a file or folder
+        Rename,            // Rename a file or folder
+        Move,              // Move a file or folder
+        Copy,              // Copy a file or folder
+        Navigate,          // Change the current directory
+        ListContent,       // List contents of a directory
+        ReadFiles,         // Read the contents of a file
+        FileEditor,        // Edit a file's contents
+        SearchFiles,       // Search for files or folders
+        ShowHistory,       // Display file access history
+        Exit,              // Exit the program
+        Unknown            // Handle unrecognized commands
     }
 
     public class Program
     {
-        // Maps user input to a command enum value.
-        private static Commands GetCommands(string command)
+        // Method to map user input to a command enum
+        public static Commands GetCommands(string command)
         {
-            return command.ToLower() switch // Convert command to lowercase and match to enum.
+            // Convert the command to lowercase and use a switch expression to map it
+            return command.ToLower() switch
             {
-                "help" => Commands.Help,
-                "pwd" => Commands.PrintWorkingDirectory,
-                "mkdir" => Commands.CreateFolder,
-                "touch" => Commands.CreateFile,
-                "rm" => Commands.Remove,
-                "rename" => Commands.Rename,
-                "mv" => Commands.Move,
-                "cp" => Commands.Copy,
-                "cd" => Commands.Navigate,
-                "ls" => Commands.ListContent,
-                "cat" => Commands.ReadFiles,
-                "nano" => Commands.FileEditor,
-                "search" => Commands.SearchFiles,
-                "history" => Commands.ShowHistory,
-                "exit" => Commands.Exit,
-                _ => Commands.Unknown // Default for unrecognized commands.
+                "help" => Commands.Help,                    // Map "help" to Help command
+                "pwd" => Commands.PrintWorkingDirectory,    // Map "pwd" to PrintWorkingDirectory command
+                "mkdir" => Commands.CreateFolder,           // Map "mkdir" to CreateFolder command
+                "touch" => Commands.CreateFile,             // Map "touch" to CreateFile command
+                "rm" => Commands.Remove,                    // Map "rm" to Remove command
+                "rename" => Commands.Rename,                // Map "rename" to Rename command
+                "mv" => Commands.Move,                      // Map "mv" to Move command
+                "cp" => Commands.Copy,                      // Map "cp" to Copy command
+                "cd" => Commands.Navigate,                  // Map "cd" to Navigate command
+                "ls" => Commands.ListContent,               // Map "ls" to ListContent command
+                "cat" => Commands.ReadFiles,                // Map "cat" to ReadFiles command
+                "nano" => Commands.FileEditor,              // Map "nano" to FileEditor command
+                "search" => Commands.SearchFiles,           // Map "search" to SearchFiles command
+                "history" => Commands.ShowHistory,          // Map "history" to ShowHistory command
+                "exit" => Commands.Exit,                    // Map "exit" to Exit command
+                _ => Commands.Unknown                       // Default to Unknown for unrecognized commands
             };
         }
 
-        // Main entry point for the application.
+        // Main entry point of the program
         public static void Main(string[] args)
         {
-            FileManager fileManager = new FileManager(); // Initialize the file manager.
-            Console.WriteLine("C# File Storage System\nAuthor: Peh Yan Bin"); // Display welcome message.
-            fileManager.PrintWorkingDirectory(); // Show the initial working directory.
+            // Create a new FileManager instance to manage the file system
+            FileManager fileManager = new FileManager();
+            // Print the program title and author
+            Console.WriteLine("C# File Storage System\nAuthor: Peh Yan Bin");
+            // Print the initial working directory
+            fileManager.PrintWorkingDirectory();
 
-            while (true) // Main loop for user input.
+            // Main loop to continuously accept user commands
+            while (true)
             {
-                Console.Write($"\n{fileManager.CurrentFolder.GetFullPath()}> "); // Display prompt with current path.
-                string commandLine = Console.ReadLine()?.Trim(); // Read user input.
+                // Display the current directory path as a prompt
+                Console.Write($"\n{fileManager.CurrentFolder.GetFullPath()}> ");
+                // Read the user's input command
+                string commandLine = Console.ReadLine()?.Trim();
 
-                if (string.IsNullOrEmpty(commandLine)) // Skip empty input.
+                // Skip empty or null input
+                if (string.IsNullOrEmpty(commandLine))
                 {
                     continue;
                 }
 
-                string[] parts = commandLine.Split(' ', StringSplitOptions.RemoveEmptyEntries); // Split input into parts.
-                Commands command = GetCommands(parts[0].ToLower()); // Get the command enum value.
+                // Split the input into parts (command and arguments)
+                string[] parts = commandLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                // Get the command enum based on the first part
+                Commands command = GetCommands(parts[0].ToLower());
 
+                // Wrap command execution in a try-catch to handle errors
                 try
                 {
-                    switch (command) // Handle the command.
+                    // Switch on the command to execute the appropriate action
+                    switch (command)
                     {
+                        // Handle the "help" command
                         case Commands.Help:
-                            fileManager.DisplayHelp(); // Show the help message.
+                            fileManager.DisplayHelp();
                             break;
+
+                        // Handle the "pwd" command
                         case Commands.PrintWorkingDirectory:
-                            fileManager.PrintWorkingDirectory(); // Show the current directory.
+                            fileManager.PrintWorkingDirectory();
                             break;
+
+                        // Handle the "mkdir" command
                         case Commands.CreateFolder:
-                            if (parts.Length > 1) // Check for folder name.
+                            if (parts.Length > 1)
                             {
-                                fileManager.CreateFolder(parts[1]); // Create a new folder.
+                                // Create a folder with the provided name
+                                fileManager.CreateFolder(parts[1]);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: mkdir <folder_name>"); // Show usage if invalid.
+                                // Print usage instructions if no folder name is provided
+                                Console.WriteLine("Usage: mkdir <folder_name>");
                             }
                             break;
+
+                        // Handle the "touch" command
                         case Commands.CreateFile:
-                            if (parts.Length > 1) // Check for file name.
+                            if (parts.Length > 1)
                             {
-                                string content = parts.Length > 2 ? string.Join(" ", parts.Skip(2)) : ""; // Get optional content.
-                                fileManager.CreateFile(parts[1], content); // Create a new file.
+                                // Combine arguments after the file name as content
+                                string content = parts.Length > 2 ? string.Join(" ", parts.Skip(2)) : "";
+                                // Create a file with the provided name and optional content
+                                fileManager.CreateFile(parts[1], content);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: touch <file_name> [content]"); // Show usage if invalid.
+                                // Print usage instructions if no file name is provided
+                                Console.WriteLine("Usage: touch <file_name> [content]");
                             }
                             break;
+
+                        // Handle the "rm" command
                         case Commands.Remove:
-                            if (parts.Length > 1) // Check for path.
+                            if (parts.Length > 1)
                             {
-                                fileManager.DeleteEntity(parts[1]); // Delete the entity.
+                                // Delete the entity at the specified path
+                                fileManager.DeleteEntity(parts[1]);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: rm <path>"); // Show usage if invalid.
+                                // Print usage instructions if no path is provided
+                                Console.WriteLine("Usage: rm <path>");
                             }
                             break;
+
+                        // Handle the "rename" command
                         case Commands.Rename:
-                            if (parts.Length == 3) // Check for path and new name.
+                            if (parts.Length == 3)
                             {
-                                fileManager.RenameEntity(parts[1], parts[2]); // Rename the entity.
+                                // Rename the entity at the specified path to the new name
+                                fileManager.RenameEntity(parts[1], parts[2]);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: rename <path> <new_name>"); // Show usage if invalid.
+                                // Print usage instructions if incorrect arguments are provided
+                                Console.WriteLine("Usage: rename <path> <new_name>");
                             }
                             break;
+
+                        // Handle the "mv" command
                         case Commands.Move:
-                            if (parts.Length == 3) // Check for source and destination paths.
+                            if (parts.Length == 3)
                             {
-                                fileManager.MoveEntity(parts[1], parts[2]); // Move the entity.
+                                // Move the entity from source path to destination path
+                                fileManager.MoveEntity(parts[1], parts[2]);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: mv <source_path> <destination_path>"); // Show usage if invalid.
+                                // Print usage instructions if incorrect arguments are provided
+                                Console.WriteLine("Usage: mv <source_path> <destination_path>");
                             }
                             break;
+
+                        // Handle the "cp" command
                         case Commands.Copy:
-                            if (parts.Length == 3) // Check for source and destination paths.
+                            if (parts.Length == 3)
                             {
-                                fileManager.CopyEntity(parts[1], parts[2]); // Copy the entity.
+                                // Copy the entity from source path to destination path
+                                fileManager.CopyEntity(parts[1], parts[2]);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: cp <source_path> <destination_path>"); // Show usage if invalid.
+                                // Print usage instructions if incorrect arguments are provided
+                                Console.WriteLine("Usage: cp <source_path> <destination_path>");
                             }
                             break;
+
+                        // Handle the "cd" command
                         case Commands.Navigate:
-                            if (parts.Length > 1) // Check for path.
+                            if (parts.Length > 1)
                             {
-                                fileManager.NavigateTo(parts[1]); // Change directory.
+                                // Navigate to the specified path
+                                fileManager.NavigateTo(parts[1]);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: cd <path>"); // Show usage if invalid.
+                                // Print usage instructions if no path is provided
+                                Console.WriteLine("Usage: cd <path>");
                             }
                             break;
+
+                        // Handle the "ls" command
                         case Commands.ListContent:
-                            string lsPath = "."; // Default to current directory.
-                            bool detailed = false; // Default to simple view.
-                            if (parts.Length > 1) // Check for additional arguments.
+                            // Default path is the current directory
+                            string lsPath = ".";
+                            // Flag for detailed listing
+                            bool detailed = false;
+
+                            // Check if additional arguments are provided
+                            if (parts.Length > 1)
                             {
-                                if (parts[1] == "-l") // Check for detailed view flag.
+                                // If the second argument is "-l", enable detailed view
+                                if (parts[1] == "-l")
                                 {
                                     detailed = true;
+                                    // If a path is provided after "-l", use it
                                     if (parts.Length > 2)
                                     {
-                                        lsPath = parts[2]; // Use specified path if provided.
+                                        lsPath = parts[2];
                                     }
                                 }
                                 else
                                 {
-                                    lsPath = parts[1]; // Use specified path.
+                                    // Use the provided path
+                                    lsPath = parts[1];
                                 }
                             }
-                            fileManager.ListContents(lsPath, detailed); // List folder contents.
+                            // List the contents of the specified path
+                            fileManager.ListContents(lsPath, detailed);
                             break;
+
+                        // Handle the "cat" command
                         case Commands.ReadFiles:
-                            if (parts.Length > 1) // Check for file path.
+                            if (parts.Length > 1)
                             {
-                                fileManager.ReadFileContent(parts[1]); // Read and display file content.
+                                // Read and display the content of the specified file
+                                fileManager.ReadFileContent(parts[1]);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: cat <file_path>"); // Show usage if invalid.
+                                // Print usage instructions if no file path is provided
+                                Console.WriteLine("Usage: cat <file_path>");
                             }
                             break;
+
+                        // Handle the "nano" command
                         case Commands.FileEditor:
-                            if (parts.Length > 1) // Check for file path.
+                            if (parts.Length > 1)
                             {
-                                fileManager.EditFileContent(parts[1]); // Edit file content.
+                                // Edit the content of the specified file
+                                fileManager.EditFileContent(parts[1]);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: nano <file_path>"); // Show usage if invalid.
+                                // Print usage instructions if no file path is provided
+                                Console.WriteLine("Usage: nano <file_path>");
                             }
                             break;
+
+                        // Handle the "search" command
                         case Commands.SearchFiles:
-                            if (parts.Length > 1) // Check for search term.
+                            if (parts.Length > 1)
                             {
+                                // Search for files/folders matching the provided term
                                 string searchTerm = parts[1];
-                                fileManager.SearchFiles(searchTerm); // Search for files and folders.
+                                fileManager.SearchFiles(searchTerm);
                             }
                             else
                             {
-                                Console.WriteLine("Usage: search <term>"); // Show usage if invalid.
+                                // Print usage instructions if no search term is provided
+                                Console.WriteLine("Usage: search <term>");
                             }
                             break;
+
+                        // Handle the "history" command
                         case Commands.ShowHistory:
-                            fileManager.DisplayHistory(); // Show file access history.
+                            // Display the file access history
+                            fileManager.DisplayHistory();
                             break;
+
+                        // Handle the "exit" command
                         case Commands.Exit:
-                            Console.WriteLine("File System shutted down."); // Display exit message.
-                            return; // Exit the application.
+                            // Print shutdown message and exit the program
+                            Console.WriteLine("File System shutted down.");
+                            return;
+
+                        // Handle unknown commands
                         default:
-                            Console.WriteLine($"Error: Unknown command '{command}'. Type 'help' for available commands."); // Handle unknown commands.
+                            // Inform the user of an unrecognized command
+                            Console.WriteLine($"Error: Unknown command. Type 'help' for available commands.");
                             break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}"); // Log any errors during command execution.
+                    // Print any errors that occur during command execution
+                    Console.WriteLine($"Error: {ex.Message}");
                 }
             }
         }

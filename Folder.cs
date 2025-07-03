@@ -1,116 +1,160 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Enumeration;
 using System.Linq;
 
+// Namespace to organize the file storage system-related classes
 namespace FileStorageSystem
 {
-    // Represents a folder in the file system, inheriting from FileSystemEntity.
+    // Folder class inherits from FileSystemEntity to represent a directory in the file system
     public class Folder : FileSystemEntity
     {
-        // List to store the contents of the folder (files and subfolders).
+        // Private list to store the contents (files and folders) of this folder
         private List<FileSystemEntity> _contents = new List<FileSystemEntity>();
 
-        // Public property for accessing the folder's contents.
+        // Public property to access and modify the folder's contents
         public List<FileSystemEntity> Contents
         {
+            // Getter returns the private _contents list
             get { return _contents; }
+            // Setter assigns a new value to the _contents list
             set { _contents = value; }
         }
 
-        // Constructor creates a folder and ensures its physical directory exists.
+        // Constructor for Folder, takes a name and parent folder as parameters
         public Folder(string name, Folder parent) : base(name, parent)
         {
-            _contents = new List<FileSystemEntity>(); // Initialize the contents list.
-            string fullPath = GetFullPath(); // Get the full path of the folder.
-            if (!Directory.Exists(fullPath)) // Check if the directory exists on disk.
+            // Initialize the _contents list to store child entities
+            _contents = new List<FileSystemEntity>();
+
+            // Get the full path of this folder using the inherited GetFullPath method
+            string fullPath = GetFullPath();
+
+            // Check if the directory does not exist in the physical file system
+            if (!Directory.Exists(fullPath))
             {
-                Directory.CreateDirectory(fullPath); // Create the directory if it doesn't exist.
-                CreationDate = Directory.GetCreationTime(fullPath); // Set creation time from disk.
-                LastModifiedDate = Directory.GetLastWriteTime(fullPath); // Set last modified time.
-                LastAccessedDate = Directory.GetLastAccessTime(fullPath); // Set last accessed time.
+                // Create the directory at the specified path
+                Directory.CreateDirectory(fullPath);
+                // Set the creation date of this folder based on the physical directory
+                CreationDate = Directory.GetCreationTime(fullPath);
+                // Set the last modified date of this folder
+                LastModifiedDate = Directory.GetLastWriteTime(fullPath);
+                // Set the last accessed date of this folder
+                LastAccessedDate = Directory.GetLastAccessTime(fullPath);
             }
         }
 
-        // Adds a file or folder to the folder's contents.
+        // Method to add a file or folder to this folder's contents
         public void AddEntity(FileSystemEntity entity)
         {
-            // Check for name conflicts in the folder.
+            // Check if an entity with the same name already exists (case-insensitive)
             if (Contents.Any(e => e.Name.Equals(entity.Name, StringComparison.OrdinalIgnoreCase)))
             {
+                // Throw an exception if a duplicate name is found
                 throw new InvalidOperationException($"An entity with the name '{entity.Name}' already exists in this folder.");
             }
-            Contents.Add(entity); // Add the entity to the contents list.
-            entity.ParentFolder = this; // Set the entity's parent to this folder.
-            LastModifiedDate = DateTime.Now; // Update the folder's last modified timestamp.
+
+            // Add the entity to the contents list
+            Contents.Add(entity);
+            // Set the entity's parent folder to this folder
+            entity.ParentFolder = this;
+            // Update the last modified date of this folder to the current time
+            LastModifiedDate = DateTime.Now;
         }
 
-        // Removes a file or folder from the folder's contents.
+        // Method to remove a file or folder from this folder's contents
         public void RemoveEntity(FileSystemEntity entity)
         {
-            if (Contents.Remove(entity)) // Remove the entity from the contents list.
+            // Attempt to remove the entity from the contents list
+            if (Contents.Remove(entity))
             {
-                string entityPath = Path.Combine(GetFullPath(), entity.Name); // Get the entity's full path.
-                if (entity is Folder) // If the entity is a folder.
+                // Construct the full path of the entity to be deleted
+                string entityPath = Path.Combine(GetFullPath(), entity.Name);
+
+                // Check if the entity is a folder
+                if (entity is Folder)
                 {
+                    // If the directory exists in the physical file system, delete it recursively
                     if (Directory.Exists(entityPath))
                     {
-                        Directory.Delete(entityPath, true); // Delete the folder and its contents from disk.
+                        Directory.Delete(entityPath, true);
                     }
                 }
-                else if (entity is File) // If the entity is a file.
+                // Check if the entity is a file
+                else if (entity is File)
                 {
+                    // If the file exists in the physical file system, delete it
                     if (System.IO.File.Exists(entityPath))
                     {
-                        System.IO.File.Delete(entityPath); // Delete the file from disk.
+                        System.IO.File.Delete(entityPath);
                     }
                 }
-                LastModifiedDate = DateTime.Now; // Update the folder's last modified timestamp.
+                // Update the last modified date of this folder to the current time
+                LastModifiedDate = DateTime.Now;
             }
             else
             {
+                // Throw an exception if the entity was not found in the contents list
                 throw new InvalidOperationException($"Entity '{entity.Name}' not found in folder '{Name}'.");
             }
         }
 
-        // Retrieves an entity from the folder by name.
+        // Method to retrieve an entity (file or folder) by name
         public FileSystemEntity GetEntity(string name)
         {
+            // Return the first entity with a matching name (case-insensitive), or null if not found
             return Contents.FirstOrDefault(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
-        // Calculates the total size of all contents in the folder.
+        // Override the abstract GetSize method to calculate the total size of this folder
         public override long GetSize()
         {
+            // Initialize a variable to store the total size
             long totalSize = 0;
+
+            // Iterate through all entities in this folder
             foreach (var entity in Contents)
             {
-                totalSize += entity.GetSize(); // Sum the size of each entity.
+                // Add the size of each entity to the total
+                totalSize += entity.GetSize();
             }
+            // Return the total size of all contents
             return totalSize;
         }
 
-        // Lists the contents of the folder, with an option for detailed output.
+        // Method to list the contents of this folder, with an optional detailed view
         public void ListContents(bool detailed = false)
         {
-            LastAccessedDate = DateTime.Now; // Update the last accessed timestamp.
-            Console.WriteLine($"Contents of {GetFullPath()}:"); // Display the folder's path.
-            if (!Contents.Any()) // Check if the folder is empty.
+            // Update the last accessed date of this folder to the current time
+            LastAccessedDate = DateTime.Now;
+
+            // Print the full path of this folder
+            Console.WriteLine($"Contents of {GetFullPath()}:");
+
+            // Check if the folder is empty
+            if (!Contents.Any())
             {
+                // Print a message indicating the folder is empty
                 Console.WriteLine("  (Empty)");
                 return;
             }
 
-            foreach (var entity in Contents.OrderBy(e => e.Name)) // Sort contents by name.
+            // Iterate through the contents, sorted by name
+            foreach (var entity in Contents.OrderBy(e => e.Name))
             {
-                if (detailed) // Detailed view includes type, size, and timestamps.
+                // If detailed view is requested
+                if (detailed)
                 {
-                    string type = entity is Folder ? "DIR" : "FIL"; // Indicate entity type.
+                    // Determine if the entity is a folder (DIR) or file (FIL)
+                    string type = entity is Folder ? "DIR" : "FIL";
+                    // Print detailed information including type, name, size, and dates
                     Console.WriteLine($"  {type} {entity.Name,-20} Size: {entity.GetSize(),-8} Created: {entity.CreationDate.ToShortDateString()} {entity.CreationDate.ToShortTimeString()} Modified: {entity.LastModifiedDate.ToShortDateString()} {entity.LastModifiedDate.ToShortTimeString()} Accessed: {entity.LastAccessedDate.ToShortDateString()} {entity.LastAccessedDate.ToShortTimeString()}");
                 }
-                else // Simple view shows only names.
+                else
                 {
-                    Console.WriteLine($"  {entity.Name}{(entity is Folder ? "/" : "")}"); // Append "/" for folders.
+                    // Print just the entity name, with a trailing slash for folders
+                    Console.WriteLine($"  {entity.Name}{(entity is Folder ? "/" : "")}");
                 }
             }
         }

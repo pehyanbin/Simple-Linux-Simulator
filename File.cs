@@ -3,113 +3,167 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+// Namespace to organize the file storage system-related classes
 namespace FileStorageSystem
 {
-    // Represents a file in the file system, inheriting from FileSystemEntity.
+    // File class inherits from FileSystemEntity to represent a file in the file system
     public class File : FileSystemEntity
     {
-        // Private field to store the file's content.
+        // Private field to store the file's content
         private string _content;
 
-        // Public property for accessing and modifying file content, synchronized with disk.
+        // Public property to access and modify the file's content
         public string Content
         {
+            // Getter for the content
             get
             {
-                LastAccessedDate = DateTime.Now; // Update last accessed timestamp on read.
-                string filePath = GetFullPath(); // Get the full path of the file.
-                if (System.IO.File.Exists(filePath)) // Check if the file exists on disk.
+                // Update the last accessed date to the current time
+                LastAccessedDate = DateTime.Now;
+                // Get the full path of the file
+                string filePath = GetFullPath();
+
+                // If the file exists in the physical file system, read its content
+                if (System.IO.File.Exists(filePath))
                 {
-                    _content = System.IO.File.ReadAllText(filePath); // Read content from disk.
+                    _content = System.IO.File.ReadAllText(filePath);
                 }
-                return _content; // Return the file's content.
+
+                // Return the content
+                return _content;
             }
+            // Setter for the content
             set
             {
-                _content = value; // Update the in-memory content.
-                LastModifiedDate = DateTime.Now; // Update last modified timestamp.
-                string filePath = GetFullPath(); // Get the full path of the file.
-                System.IO.File.WriteAllText(filePath, _content); // Write content to disk.
+                // Update the private content field
+                _content = value;
+                // Update the last modified date to the current time
+                LastModifiedDate = DateTime.Now;
+                // Get the full path of the file
+                string filePath = GetFullPath();
+                // Write the new content to the physical file
+                System.IO.File.WriteAllText(filePath, _content);
             }
         }
 
-        // Constructor creates a file and optionally writes initial content to disk.
+        // Constructor for File, takes a name, parent folder, and optional content
         public File(string name, Folder parent, string content = "") : base(name, parent)
         {
-            _content = content; // Set initial content.
-            string filePath = GetFullPath(); // Get the full path of the file.
+            // Initialize the content field
+            _content = content;
+            // Get the full path of the file
+            string filePath = GetFullPath();
 
-            if (!System.IO.File.Exists(filePath)) // Check if the file doesn't exist on disk.
+            // If the file does not exist in the physical file system, create it
+            if (!System.IO.File.Exists(filePath))
             {
-                System.IO.File.WriteAllText(filePath, content); // Create the file with initial content.
+                // Write the initial content to the file
+                System.IO.File.WriteAllText(filePath, content);
             }
         }
 
-        // Calculates the size of the file based on its content.
+        // Override the abstract GetSize method to calculate the file's size
         public override long GetSize()
         {
-            string filePath = GetFullPath(); // Get the full path of the file.
-            if (System.IO.File.Exists(filePath)) // If the file exists on disk.
+            // Get the full path of the file
+            string filePath = GetFullPath();
+
+            // If the file exists in the physical file system, return its size
+            if (System.IO.File.Exists(filePath))
             {
-                return new FileInfo(filePath).Length; // Return the file's size from disk.
+                return new FileInfo(filePath).Length;
             }
-            return Content.Length; // Otherwise, return the in-memory content length.
+
+            // Otherwise, return the length of the in-memory content
+            return Content.Length;
         }
 
-        // Updates the file's content and logs the action.
+        // Method to edit the file's content
         public void Edit(string newContent)
         {
-            Content = newContent; // Set new content (triggers write to disk).
-            Console.WriteLine($"File '{Name}' content updated."); // Log the edit action.
+            // Update the file's content using the Content property
+            Content = newContent;
+            // Print a confirmation message
+            Console.WriteLine($"File '{Name}' content updated.");
         }
 
-        // Appends content to the file.
+        // Method to append content to the file
         public void AppendContent(string contentToAppend)
         {
-            Content += contentToAppend; // Append to existing content (triggers write to disk).
-            Console.WriteLine($"Content appended to '{Name}'."); // Log the append action.
+            // Append the new content to the existing content
+            Content += contentToAppend;
+            // Print a confirmation message
+            Console.WriteLine($"Content appended to '{Name}'.");
         }
 
-        // Prepends content to the file.
+        // Method to prepend content to the file
         public void PrependContent(string contentToPrepend)
         {
-            Content = contentToPrepend + Content; // Prepend to existing content (triggers write to disk).
-            Console.WriteLine($"Content prepended to '{Name}'."); // Log the prepend action.
+            // Prepend the new content to the existing content
+            Content = contentToPrepend + Content;
+            // Print a confirmation message
+            Console.WriteLine($"Content prepended to '{Name}'.");
         }
 
-        // Inserts content at a specific line number.
+        // Method to insert content at a specific line number
         public void InsertContent(int lineNumber, string contentToInsert)
         {
-            var lines = Content.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList(); // Split content into lines.
-            if (lineNumber < 1 || lineNumber > lines.Count + 1) // Validate line number.
+            // Split the content into lines
+            var lines = Content.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+
+            // Validate the line number
+            if (lineNumber < 1 || lineNumber > lines.Count + 1)
             {
+                // Throw an exception if the line number is out of range
                 throw new ArgumentOutOfRangeException("Line number out of range.");
             }
-            lines.Insert(lineNumber - 1, contentToInsert); // Insert content at the specified line.
-            Content = string.Join(Environment.NewLine, lines); // Rejoin lines and update content.
-            Console.WriteLine($"Content inserted at line {lineNumber} in '{Name}'."); // Log the insert action.
+
+            // Insert the content at the specified line number (0-based index)
+            lines.Insert(lineNumber - 1, contentToInsert);
+            // Update the content with the new lines
+            Content = string.Join(Environment.NewLine, lines);
+
+            // Print a confirmation message
+            Console.WriteLine($"Content inserted at line {lineNumber} in '{Name}'.");
         }
 
-        // Deletes a specific line from the file.
+        // Method to delete a specific line from the file
         public void DeleteLine(int lineNumber)
         {
-            var lines = Content.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList(); // Split content into lines.
-            if (lineNumber < 1 || lineNumber > lines.Count) // Validate line number.
+            // Split the content into lines
+            var lines = Content.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+
+            // Validate the line number
+            if (lineNumber < 1 || lineNumber > lines.Count)
             {
+                // Throw an exception if the line number is out of range
                 throw new ArgumentOutOfRangeException("Line number out of range.");
             }
-            lines.RemoveAt(lineNumber - 1); // Remove the specified line.
-            Content = string.Join(Environment.NewLine, lines); // Rejoin lines and update content.
-            Console.WriteLine($"Line {lineNumber} deleted from '{Name}'."); // Log the delete action.
+
+            // Remove the line at the specified index (0-based)
+            lines.RemoveAt(lineNumber - 1);
+
+            // Update the content with the remaining lines
+            Content = string.Join(Environment.NewLine, lines);
+
+            // Print a confirmation message
+            Console.WriteLine($"Line {lineNumber} deleted from '{Name}'.");
         }
 
-        // Displays the file's content to the console.
+        // Method to display the file's content
         public void View()
         {
-            LastAccessedDate = DateTime.Now; // Update last accessed timestamp.
-            Console.WriteLine($"--- Content of {Name} ---"); // Display header.
-            Console.WriteLine(Content); // Display file content.
-            Console.WriteLine("--------------------------"); // Display footer.
+            // Update the last accessed date to the current time
+            LastAccessedDate = DateTime.Now;
+
+            // Print a header for the file content
+            Console.WriteLine($"--- Content of {Name} ---");
+
+            // Print the file's content
+            Console.WriteLine(Content);
+
+            // Print a footer
+            Console.WriteLine("--------------------------");
         }
     }
 }
