@@ -1,0 +1,14 @@
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\bin\Debug\net9.0\LinuxSimulator.exe
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\bin\Debug\net9.0\LinuxSimulator.deps.json
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\bin\Debug\net9.0\LinuxSimulator.runtimeconfig.json
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\bin\Debug\net9.0\LinuxSimulator.dll
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\bin\Debug\net9.0\LinuxSimulator.pdb
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\LinuxSimulator.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\LinuxSimulator.AssemblyInfoInputs.cache
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\LinuxSimulator.AssemblyInfo.cs
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\LinuxSimulator.csproj.CoreCompileInputs.cache
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\LinuxSimulator.dll
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\refint\LinuxSimulator.dll
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\LinuxSimulator.pdb
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\LinuxSimulator.genruntimeconfig.cache
+C:\Users\pehya\Downloads\Simple-Linux-Simulator-main\Simple-Linux-Simulator-main\LinuxSimulator\obj\Debug\net9.0\ref\LinuxSimulator.dll
